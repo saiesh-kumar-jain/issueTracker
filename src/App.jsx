@@ -1,22 +1,42 @@
-// const element = (
-//     <div title="Outer div">
-//         <h1>Hello World</h1>
-//     </div>
-// )
+class IssueFilter extends React.Component {
+    render() {
+        return (
+            <div><h1>Issue Filter</h1></div>
+        );
+    }
+}
 
-// ReactDOM.render(element, document.getElementById('contents'))
+class IssueTable extends React.Component {
+    render() {
+        return (
+            <div> Issue Table </div>
+        );
+    }
+}
 
+class IssueAdd extends React.Component {
+    render() {
+        return (
+            <div>This is a placeholder for a form to add an issue.</div>
+        );
+    }
+}
 
-// const element = React.createElement('div', { title: 'Outer div' },
-//     React.createElement('h1', null, 'Hello World'))
+class IssueList extends React.Component {
+    render() {
+        return (
+            <React.Fragment>
+                <h1>Issue Tracker</h1>
+                <IssueFilter />
+                <hr />
+                <IssueTable />
+                <hr />
+                <IssueAdd />
+            </React.Fragment>
+        );
+    }
+}
 
-const continents = ['Africa', 'America', 'Asia', 'Australia', 'Europe', 'India', 'Cannada'];
-const helloContinents = Array.from(continents, c => `Hello ${c}!`);
-const message = helloContinents.join(' ');
-const element = (
-    <div title="Outer div">
-        <h1>{message}</h1>
-    </div>
-);
+const element = < IssueList />
 
 ReactDOM.render(element, document.getElementById('contents'));
