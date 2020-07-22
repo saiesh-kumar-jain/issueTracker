@@ -1,6 +1,4 @@
 /* eslint linebreak-style: ["error", "windows"] */
-
-
 /* eslint "react/prefer-stateless-function": "off" */
 import React from 'react';
 
