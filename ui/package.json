@@ -5,10 +5,10 @@
   "main": "index.js",
   "scripts": {
     "build": " npm run compile && npm run start ",
-    "start": "nodemon -w server -e js,graphql server/server.js",
+    "start": "nodemon -w uiserver.js -w .env uiserver.js",
     "compile": "babel src --out-dir public",
-    "watch": "babel src --out-dir public --watch --verbose",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint . --ext js,jsx --ignore-pattern public",
+    "watch": "babel src --out-dir public --watch --verbose"
   },
   "repository": {
     "type": "git",
@@ -21,16 +21,20 @@
   },
   "homepage": "https://github.com/saiesh-kumar-jain/issueTracker#readme",
   "dependencies": {
-    "apollo-server-express": "^2.16.0",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "graphql": "^15.3.0",
-    "mongodb": "^3.5.9",
+    "http-proxy-middleware": "^1.0.5",
     "nodemon": "^1.19.4"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.5",
     "@babel/core": "^7.10.5",
     "@babel/preset-env": "^7.10.4",
-    "@babel/preset-react": "^7.10.4"
+    "@babel/preset-react": "^7.10.4",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb": "^17.1.1",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-react": "^7.20.3"
   }
 }

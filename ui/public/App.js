@@ -26,11 +26,22 @@ function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Re
 
 function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
-var sampleIssue = {
-  status: 'New',
-  owner: 'Pieta',
-  title: 'Completion date should be optional'
-};
+/* eslint "react/react-in-jsx-scope": "off" */
+
+/* globals React ReactDOM */
+
+/* eslint "react/jsx-no-undef": "off" */
+
+/* eslint "react/no-multi-comp": "off" */
+
+/* eslint "no-alert": "off" */
+var dateRegex = new RegExp('^\\d\\d\\d\\d-\\d\\d-\\d\\d');
+
+function jsonDateReviver(key, value) {
+  if (dateRegex.test(value)) return new Date(value);
+  return value;
+} // eslint-disable-next-line react/prefer-stateless-function
+
 
 var IssueFilter = /*#__PURE__*/function (_React$Component) {
   _inherits(IssueFilter, _React$Component);
@@ -46,38 +57,21 @@ var IssueFilter = /*#__PURE__*/function (_React$Component) {
   _createClass(IssueFilter, [{
     key: "render",
     value: function render() {
-      return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", null, "Issue Filter"));
+      return /*#__PURE__*/React.createElement("div", null, "This is a placeholder for the issue filter.");
     }
   }]);
 
   return IssueFilter;
-}(React.Component); // class IssueTable extends React.Component {
-//     render() {
-//         const rowStyle = { border: "1px solid silver", padding: 4 };
-//         return (
-//             <table style={{ borderCollapse: "collapse" }}>
-//                 <thead>
-//                     <tr>
-//                         <th style={rowStyle}>ID</th>
-//                         <th style={rowStyle}>Title</th>
-//                     </tr>
-//                 </thead>
-//                 <tbody>
-//                     <IssueRow rowStyle={rowStyle} issue_id={1}>
-//                         Error in console when clicking Add
-//                     </IssueRow>
-//                     <IssueRow rowStyle={rowStyle} issue_id={2}>
-//                         <div>Missing <b>bottom</b> border on panel</div>
-//                     </IssueRow>
-//                 </tbody>
-//             </table>
-//         );
-//     }
-// }
+}(React.Component);
 
+function IssueRow(_ref) {
+  var issue = _ref.issue;
+  return /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", null, issue.id), /*#__PURE__*/React.createElement("td", null, issue.status), /*#__PURE__*/React.createElement("td", null, issue.owner), /*#__PURE__*/React.createElement("td", null, issue.created.toDateString()), /*#__PURE__*/React.createElement("td", null, issue.effort), /*#__PURE__*/React.createElement("td", null, issue.due ? issue.due.toDateString() : ''), /*#__PURE__*/React.createElement("td", null, issue.title));
+}
 
-function IssueTable(props) {
-  var issueRows = props.issues.map(function (issue) {
+function IssueTable(_ref2) {
+  var issues = _ref2.issues;
+  var issueRows = issues.map(function (issue) {
     return /*#__PURE__*/React.createElement(IssueRow, {
       key: issue.id,
       issue: issue
@@ -86,29 +80,6 @@ function IssueTable(props) {
   return /*#__PURE__*/React.createElement("table", {
     className: "bordered-table"
   }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "ID"), /*#__PURE__*/React.createElement("th", null, "Status"), /*#__PURE__*/React.createElement("th", null, "Owner"), /*#__PURE__*/React.createElement("th", null, "Created"), /*#__PURE__*/React.createElement("th", null, "Effort"), /*#__PURE__*/React.createElement("th", null, "Due Date"), /*#__PURE__*/React.createElement("th", null, "Title"))), /*#__PURE__*/React.createElement("tbody", null, issueRows));
-} // class IssueRow extends React.Component {
-//     render() {
-//         const style = this.props.rowStyle;
-//         return (
-//             <tr>
-//                 <td style={style}>{this.props.issue_id}</td>
-//                 <td style={style}>{this.props.children}</td>
-//             </tr>
-//         );
-//     }
-// }
-
-
-var dateRegex = new RegExp('^\\d\\d\\d\\d-\\d\\d-\\d\\d');
-
-function jsonDateReviver(key, value) {
-  if (dateRegex.test(value)) return new Date(value);
-  return value;
-}
-
-function IssueRow(props) {
-  var issue = props.issue;
-  return /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", null, issue.id), /*#__PURE__*/React.createElement("td", null, issue.status), /*#__PURE__*/React.createElement("td", null, issue.owner), /*#__PURE__*/React.createElement("td", null, issue.created.toDateString()), /*#__PURE__*/React.createElement("td", null, issue.effort), /*#__PURE__*/React.createElement("td", null, issue.due ? issue.due.toDateString() : ' '), /*#__PURE__*/React.createElement("td", null, issue.title));
 }
 
 var IssueAdd = /*#__PURE__*/function (_React$Component2) {
@@ -136,9 +107,10 @@ var IssueAdd = /*#__PURE__*/function (_React$Component2) {
         title: form.title.value,
         due: new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * 10)
       };
-      this.props.createIssue(issue);
-      form.owner.value = "";
-      form.title.value = "";
+      var createIssue = this.props.createIssue;
+      createIssue(issue);
+      form.owner.value = '';
+      form.title.value = '';
     }
   }, {
     key: "render",
@@ -154,12 +126,18 @@ var IssueAdd = /*#__PURE__*/function (_React$Component2) {
         type: "text",
         name: "title",
         placeholder: "Title"
-      }), /*#__PURE__*/React.createElement("button", null, "Add"));
+      }), /*#__PURE__*/React.createElement("button", {
+        type: "submit"
+      }, "Add"));
     }
   }]);
 
   return IssueAdd;
 }(React.Component);
+
+IssueAdd.propTypes = {
+  createIssue: PropTypes.func.isRequired
+};
 
 function graphQLFetch(_x) {
   return _graphQLFetch.apply(this, arguments);
@@ -181,7 +159,7 @@ function _graphQLFetch() {
             variables = _args3.length > 1 && _args3[1] !== undefined ? _args3[1] : {};
             _context3.prev = 1;
             _context3.next = 4;
-            return fetch('/graphql', {
+            return fetch(window.ENV.UI_API_ENDPOINT, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
@@ -204,7 +182,7 @@ function _graphQLFetch() {
             if (result.errors) {
               error = result.errors[0];
 
-              if (error.extensions.code == 'BAD_USER_INPUT') {
+              if (error.extensions.code === 'BAD_USER_INPUT') {
                 details = error.extensions.exception.errors.join('\n ');
                 alert("".concat(error.message, ":\n ").concat(details));
               } else {
@@ -218,8 +196,9 @@ function _graphQLFetch() {
             _context3.prev = 13;
             _context3.t0 = _context3["catch"](1);
             alert("Error in sending data to server: ".concat(_context3.t0.message));
+            return _context3.abrupt("return", null);
 
-          case 16:
+          case 17:
           case "end":
             return _context3.stop();
         }
@@ -248,45 +227,30 @@ var IssueList = /*#__PURE__*/function (_React$Component3) {
   }
 
   _createClass(IssueList, [{
-    key: "createIssue",
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      this.loadData();
+    }
+  }, {
+    key: "loadData",
     value: function () {
-      var _createIssue = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(issue) {
+      var _loadData = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee() {
         var query, data;
         return regeneratorRuntime.wrap(function _callee$(_context) {
           while (1) {
             switch (_context.prev = _context.next) {
               case 0:
-                // issue.id = this.state.issues.length + 1;
-                // issue.created = new Date();
-                // const newIssueList = this.state.issues.slice();
-                // newIssueList.push(issue);
-                // this.setState({ issues: newIssueList });
-                // const query = `mutation {
-                //     issueAdd(issue:{
-                //         title: "${issue.title}",
-                //         owner: "${issue.owner}",
-                //         due: "${issue.due.toISOString()}",
-                //         }) {
-                //         id
-                //         }
-                //     }`;
-                query = "mutation issueAdd($issue: IssueInputs!) {\n            issueAdd(issue: $issue) {\n            id\n          }\n        }"; // const response = await fetch('/graphql', {
-                //     method: 'POST',
-                //     headers: { 'Content-Type': 'application/json' },
-                //     body: JSON.stringify({ query, variables: { issue } })
-                // });
-                // this.loadData();
-
+                query = "query {\n      issueList {\n        id title status owner\n        created effort due\n      }\n    }";
                 _context.next = 3;
-                return graphQLFetch(query, {
-                  issue: issue
-                });
+                return graphQLFetch(query);
 
               case 3:
                 data = _context.sent;
 
                 if (data) {
-                  this.loadData();
+                  this.setState({
+                    issues: data.issueList
+                  });
                 }
 
               case 5:
@@ -297,46 +261,32 @@ var IssueList = /*#__PURE__*/function (_React$Component3) {
         }, _callee, this);
       }));
 
-      function createIssue(_x2) {
-        return _createIssue.apply(this, arguments);
+      function loadData() {
+        return _loadData.apply(this, arguments);
       }
 
-      return createIssue;
+      return loadData;
     }()
   }, {
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      this.loadData();
-    }
-  }, {
-    key: "loadData",
+    key: "createIssue",
     value: function () {
-      var _loadData = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
+      var _createIssue = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(issue) {
         var query, data;
         return regeneratorRuntime.wrap(function _callee2$(_context2) {
           while (1) {
             switch (_context2.prev = _context2.next) {
               case 0:
-                query = "query {\n            issueList {\n            id title status owner\n            created effort due\n            }\n            }"; // const response = await fetch('/graphql', {
-                //     method: 'POST',
-                //     headers: { 'Content-Type': 'application/json' },
-                //     body: JSON.stringify({ query })
-                // });
-                // //const result = await response.json();
-                // const body = await response.text();
-                // const result = JSON.parse(body, jsonDateReviver);
-                // this.setState({ issues: result.data.issueList });
-
+                query = "mutation issueAdd($issue: IssueInputs!) {\n      issueAdd(issue: $issue) {\n        id\n      }\n    }";
                 _context2.next = 3;
-                return graphQLFetch(query);
+                return graphQLFetch(query, {
+                  issue: issue
+                });
 
               case 3:
                 data = _context2.sent;
 
                 if (data) {
-                  this.setState({
-                    issues: data.issueList
-                  });
+                  this.loadData();
                 }
 
               case 5:
@@ -347,17 +297,18 @@ var IssueList = /*#__PURE__*/function (_React$Component3) {
         }, _callee2, this);
       }));
 
-      function loadData() {
-        return _loadData.apply(this, arguments);
+      function createIssue(_x2) {
+        return _createIssue.apply(this, arguments);
       }
 
-      return loadData;
+      return createIssue;
     }()
   }, {
     key: "render",
     value: function render() {
+      var issues = this.state.issues;
       return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("h1", null, "Issue Tracker"), /*#__PURE__*/React.createElement(IssueFilter, null), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement(IssueTable, {
-        issues: this.state.issues
+        issues: issues
       }), /*#__PURE__*/React.createElement("hr", null), /*#__PURE__*/React.createElement(IssueAdd, {
         createIssue: this.createIssue
       }));
