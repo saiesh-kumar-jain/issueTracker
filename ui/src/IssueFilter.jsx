@@ -1,7 +1,8 @@
 /* eslint linebreak-style: ["error", "windows"] */
 
-/* globals React */
+
 /* eslint "react/prefer-stateless-function": "off" */
+import React from 'react';
 
 export default class IssueFilter extends React.Component {
   render() {

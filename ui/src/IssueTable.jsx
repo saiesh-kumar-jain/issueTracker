@@ -1,5 +1,5 @@
 /* eslint linebreak-style: ["error", "windows"] */
-/* globals React */
+import React from 'react';
 
 function IssueRow({ issue }) {
   return (

@@ -1,5 +1,8 @@
-/* globals React PropTypes */
+
 /* eslint linebreak-style: ["error", "windows"] */
+
+import React from 'react';
+import PropTypes from 'prop-types';
 
 export default class IssueAdd extends React.Component {
   constructor() {
