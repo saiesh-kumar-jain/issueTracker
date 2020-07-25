@@ -1,6 +1,6 @@
 /* eslint linebreak-style: ["error", "windows"] */
 
-function template(body) {
+export default function template(body) {
   return `<!DOCTYPE HTML>
     <html>
     <head>
@@ -21,4 +21,4 @@ table.table-hover tr {cursor: pointer;}
 </html>
 `;
 }
-module.exports = template;
+//module.exports = template;
