@@ -22,7 +22,7 @@
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "877863521d7656c4ba3d";
+/******/ 	var hotCurrentHash = "ad504e48c3fe1a099fae";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -997,9 +997,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-router-dom */ "react-router-dom");
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _src_Page_jsx__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../src/Page.jsx */ "./src/Page.jsx");
-/* harmony import */ var _src_store_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ../src/store.js */ "./src/store.js");
-/* harmony import */ var _template_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./template.js */ "./server/template.js");
-/* harmony import */ var _src_graphQLFetch_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../src/graphQLFetch.js */ "./src/graphQLFetch.js");
+/* harmony import */ var _template_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./template.js */ "./server/template.js");
+/* harmony import */ var _src_store_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../src/store.js */ "./src/store.js");
+/* harmony import */ var _src_routes_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ../src/routes.js */ "./src/routes.js");
 /* eslint linebreak-style: ["error", "windows"] */
 
 
@@ -1010,14 +1010,23 @@ __webpack_require__.r(__webpack_exports__);
 
 
 async function render(req, res) {
-  const initialData = await Object(_src_graphQLFetch_js__WEBPACK_IMPORTED_MODULE_6__["default"])('query{about}');
-  _src_store_js__WEBPACK_IMPORTED_MODULE_4__["default"].initialData = initialData;
+  const activeRoute = _src_routes_js__WEBPACK_IMPORTED_MODULE_6__["default"].find(route => Object(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["matchPath"])(req.path, route));
+  let initialData;
+
+  if (activeRoute && activeRoute.component.fetchData) {
+    const match = Object(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["matchPath"])(req.path, activeRoute);
+    const index = req.url.indexOf('?');
+    const search = index !== -1 ? req.url.substr(index) : null;
+    initialData = await activeRoute.component.fetchData(match, search);
+  }
+
+  _src_store_js__WEBPACK_IMPORTED_MODULE_5__["default"].initialData = initialData;
   const element = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["StaticRouter"], {
     location: req.url,
     context: {}
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_src_Page_jsx__WEBPACK_IMPORTED_MODULE_3__["default"], null));
   const body = react_dom_server__WEBPACK_IMPORTED_MODULE_1___default.a.renderToString(element);
-  res.send(Object(_template_js__WEBPACK_IMPORTED_MODULE_5__["default"])(body, initialData));
+  res.send(Object(_template_js__WEBPACK_IMPORTED_MODULE_4__["default"])(body, initialData));
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (render);
@@ -1034,30 +1043,33 @@ async function render(req, res) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return template; });
+/* harmony import */ var serialize_javascript__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! serialize-javascript */ "serialize-javascript");
+/* harmony import */ var serialize_javascript__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(serialize_javascript__WEBPACK_IMPORTED_MODULE_0__);
 /* eslint linebreak-style: ["error", "windows"] */
+
 function template(body, data) {
   return `<!DOCTYPE HTML>
-    <html>
-    <head>
+  <html>
+  <head>
     <meta charset="utf-8">
     <title>Pro MERN Stack</title>
     <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css" >
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-table.table-hover tr {cursor: pointer;}
-.panel-title a {display: block; width: 100%; cursor: pointer;}
-</style>
-</head>
-<body>
-<!-- Page generated from template. -->
-<div id="contents">${body}</div>
-<script>window.__INITIAL_DATA__ = ${JSON.stringify(data)}</script>
-<script src="/env.js"></script>
-<script src="/vendor.bundle.js"></script>
-<script src="/app.bundle.js"></script>
-</body>
-</html>
-`;
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      table.table-hover tr {cursor: pointer;}
+      .panel-title a {display: block; width: 100%; cursor: pointer;}
+    </style>
+  </head>
+  <body>
+    <!-- Page generated from template. -->
+    <div id="contents">${body}</div>
+    <script>window.__INITIAL_DATA__ = ${serialize_javascript__WEBPACK_IMPORTED_MODULE_0___default()(data)}</script>
+    <script src="/env.js"></script>
+    <script src="/vendor.bundle.js"></script>
+    <script src="/app.bundle.js"></script>
+  </body>
+  </html>
+  `;
 } // module.exports = template;
 
 /***/ }),
@@ -1073,29 +1085,26 @@ table.table-hover tr {cursor: pointer;}
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var dotenv__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! dotenv */ "dotenv");
 /* harmony import */ var dotenv__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(dotenv__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! path */ "path");
-/* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(path__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! express */ "express");
-/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(express__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var http_proxy_middleware__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! http-proxy-middleware */ "http-proxy-middleware");
-/* harmony import */ var http_proxy_middleware__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(http_proxy_middleware__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var source_map_support__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! source-map-support */ "source-map-support");
-/* harmony import */ var source_map_support__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(source_map_support__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _render_jsx__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./render.jsx */ "./server/render.jsx");
+/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! express */ "express");
+/* harmony import */ var express__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(express__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var http_proxy_middleware__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! http-proxy-middleware */ "http-proxy-middleware");
+/* harmony import */ var http_proxy_middleware__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(http_proxy_middleware__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var source_map_support__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! source-map-support */ "source-map-support");
+/* harmony import */ var source_map_support__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(source_map_support__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _render_jsx__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./render.jsx */ "./server/render.jsx");
 /* eslint linebreak-style: ["error", "windows"] */
 
 
 
 
 
-
-const app = express__WEBPACK_IMPORTED_MODULE_2___default()();
-source_map_support__WEBPACK_IMPORTED_MODULE_4___default.a.install();
+const app = express__WEBPACK_IMPORTED_MODULE_1___default()();
+source_map_support__WEBPACK_IMPORTED_MODULE_3___default.a.install();
 dotenv__WEBPACK_IMPORTED_MODULE_0___default.a.config();
 const enableHMR = (process.env.ENABLE_HMR || 'true') === 'true';
 
 if (enableHMR && "development" !== 'production') {
-  console.log('Adding dev middleware, enabling HMR');
+  console.log('Adding dev middlware, enabling HMR');
   /* eslint "global-require": "off" */
 
   /* eslint "import/no-extraneous-dependencies": "off" */
@@ -1116,11 +1125,11 @@ if (enableHMR && "development" !== 'production') {
   app.use(hotMiddleware(compiler));
 }
 
-app.use(express__WEBPACK_IMPORTED_MODULE_2___default.a.static('public'));
+app.use(express__WEBPACK_IMPORTED_MODULE_1___default.a.static('public'));
 const apiProxyTarget = process.env.API_PROXY_TARGET;
 
 if (apiProxyTarget) {
-  app.use('/graphql', http_proxy_middleware__WEBPACK_IMPORTED_MODULE_3___default()({
+  app.use('/graphql', http_proxy_middleware__WEBPACK_IMPORTED_MODULE_2___default()({
     target: apiProxyTarget
   }));
 }
@@ -1139,11 +1148,8 @@ app.get('/env.js', (req, res) => {
   };
   res.send(`window.ENV = ${JSON.stringify(env)}`);
 });
-app.get('/about', (req, res, next) => {
-  Object(_render_jsx__WEBPACK_IMPORTED_MODULE_5__["default"])(req, res, next);
-});
-app.get('*', (req, res) => {
-  res.sendFile(path__WEBPACK_IMPORTED_MODULE_1___default.a.resolve('public/index.html'));
+app.get('*', (req, res, next) => {
+  Object(_render_jsx__WEBPACK_IMPORTED_MODULE_4__["default"])(req, res, next);
 });
 const port = process.env.UI_SERVER_PORT || 8000;
 app.listen(port, () => {
@@ -1151,7 +1157,7 @@ app.listen(port, () => {
 });
 
 if (true) {
-  module.hot.accept(/*! ./render.jsx */ "./server/render.jsx", function() { /* harmony import */ _render_jsx__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./render.jsx */ "./server/render.jsx");
+  module.hot.accept(/*! ./render.jsx */ "./server/render.jsx", function() { /* harmony import */ _render_jsx__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./render.jsx */ "./server/render.jsx");
  });
 }
 
@@ -1170,13 +1176,48 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _store_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./store.js */ "./src/store.js");
+/* harmony import */ var _graphQLFetch_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./graphQLFetch.js */ "./src/graphQLFetch.js");
 /* eslint linebreak-style: ["error", "windows"] */
 
 
-function About() {
-  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
-    className: "text-center"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Issue Tracker version 0.9"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h4", null, _store_js__WEBPACK_IMPORTED_MODULE_1__["default"].initialData ? _store_js__WEBPACK_IMPORTED_MODULE_1__["default"].initialData.about : 'unknown'));
+
+class About extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
+  static async fetchData() {
+    const data = await Object(_graphQLFetch_js__WEBPACK_IMPORTED_MODULE_2__["default"])('query {about}');
+    return data;
+  }
+
+  constructor(props) {
+    super(props);
+    const apiAbout = _store_js__WEBPACK_IMPORTED_MODULE_1__["default"].initialData ? _store_js__WEBPACK_IMPORTED_MODULE_1__["default"].initialData.about : null;
+    delete _store_js__WEBPACK_IMPORTED_MODULE_1__["default"].initialData;
+    this.state = {
+      apiAbout
+    };
+  }
+
+  async componentDidMount() {
+    const {
+      apiAbout
+    } = this.state;
+
+    if (apiAbout == null) {
+      const data = await About.fetchData();
+      this.setState({
+        apiAbout: data.about
+      });
+    }
+  }
+
+  render() {
+    const {
+      apiAbout
+    } = this.state;
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("div", {
+      className: "text-center"
+    }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h3", null, "Issue Tracker version 0.9"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h4", null, apiAbout));
+  }
+
 }
 
 /***/ }),
@@ -1195,40 +1236,21 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-router-dom */ "react-router-dom");
 /* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _IssueList_jsx__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./IssueList.jsx */ "./src/IssueList.jsx");
-/* harmony import */ var _IssueReport_jsx__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./IssueReport.jsx */ "./src/IssueReport.jsx");
-/* harmony import */ var _IssueEdit_jsx__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./IssueEdit.jsx */ "./src/IssueEdit.jsx");
-/* harmony import */ var _About_jsx__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./About.jsx */ "./src/About.jsx");
+/* harmony import */ var _routes_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./routes.js */ "./src/routes.js");
+function _extends() { _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
+
 /* eslint linebreak-style: ["error", "windows"] */
 
 
-
-
-
-
-
-const NotFound = () => /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Page not Found");
 
 function Contents() {
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Switch"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Redirect"], {
     exact: true,
     from: "/",
     to: "/issues"
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Route"], {
-    path: "/issues",
-    component: _IssueList_jsx__WEBPACK_IMPORTED_MODULE_2__["default"]
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Route"], {
-    path: "/report",
-    component: _IssueReport_jsx__WEBPACK_IMPORTED_MODULE_3__["default"]
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Route"], {
-    path: "/edit/:id",
-    component: _IssueEdit_jsx__WEBPACK_IMPORTED_MODULE_4__["default"]
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Route"], {
-    path: "/about",
-    component: _About_jsx__WEBPACK_IMPORTED_MODULE_5__["default"]
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Route"], {
-    component: NotFound
-  }));
+  }), _routes_js__WEBPACK_IMPORTED_MODULE_2__["default"].map(attrs => /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Route"], _extends({}, attrs, {
+    key: attrs.path
+  }))));
 }
 
 /***/ }),
@@ -1625,6 +1647,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _DateInput_jsx__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./DateInput.jsx */ "./src/DateInput.jsx");
 /* harmony import */ var _TextInput_jsx__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./TextInput.jsx */ "./src/TextInput.jsx");
 /* harmony import */ var _Toast_jsx__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./Toast.jsx */ "./src/Toast.jsx");
+/* harmony import */ var _store_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./store.js */ "./src/store.js");
 /* eslint linebreak-style: ["error", "windows"] */
 
 
@@ -1635,27 +1658,53 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 class IssueEdit extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
+  static async fetchData(match, search, showError) {
+    const query = `query issue($id: Int!) {
+      issue(id: $id) {
+        id title status owner
+        effort created due description
+      }
+    }`;
+    const {
+      params: {
+        id
+      }
+    } = match;
+    const result = await Object(_graphQLFetch_js__WEBPACK_IMPORTED_MODULE_4__["default"])(query, {
+      id: parseInt(id, 10)
+    }, showError);
+    return result;
+  }
+
   constructor() {
     super();
+    const issue = _store_js__WEBPACK_IMPORTED_MODULE_9__["default"].initialData ? _store_js__WEBPACK_IMPORTED_MODULE_9__["default"].initialData.issue : null;
+    delete _store_js__WEBPACK_IMPORTED_MODULE_9__["default"].initialData;
     this.state = {
-      issue: {},
+      issue,
       invalidFields: {},
       showingValidation: false,
       toastVisible: false,
-      toastMessage: ' ',
+      toastMessage: '',
       toastType: 'success'
     };
     this.onChange = this.onChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.onValidityChange = this.onValidityChange.bind(this);
+    this.dismissValidation = this.dismissValidation.bind(this);
+    this.showValidation = this.showValidation.bind(this);
     this.showSuccess = this.showSuccess.bind(this);
     this.showError = this.showError.bind(this);
     this.dismissToast = this.dismissToast.bind(this);
   }
 
   componentDidMount() {
-    this.loadData();
+    const {
+      issue
+    } = this.state;
+    if (issue == null) this.loadData();
   }
 
   componentDidUpdate(prevProps) {
@@ -1745,6 +1794,17 @@ class IssueEdit extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
     }
   }
 
+  async loadData() {
+    const {
+      match
+    } = this.props;
+    const data = await IssueEdit.fetchData(match, null, this.showError);
+    this.setState({
+      issue: data ? data.issue : {},
+      invalidFields: {}
+    });
+  }
+
   showValidation() {
     this.setState({
       showingValidation: true
@@ -1779,30 +1839,11 @@ class IssueEdit extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
     });
   }
 
-  async loadData() {
-    const query = `query issue($id: Int!) {
-      issue(id: $id) {
-        id title status owner
-        effort created due description
-      }
-    }`;
-    const {
-      match: {
-        params: {
-          id
-        }
-      }
-    } = this.props;
-    const data = await Object(_graphQLFetch_js__WEBPACK_IMPORTED_MODULE_4__["default"])(query, {
-      id: parseInt(id, 10)
-    }, this.showError);
-    this.setState({
-      issue: data ? data.issue : {},
-      invalidFields: {}
-    });
-  }
-
   render() {
+    const {
+      issue
+    } = this.state;
+    if (issue == null) return null;
     const {
       issue: {
         id
@@ -1824,11 +1865,6 @@ class IssueEdit extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
       return null;
     }
 
-    const {
-      toastVisible,
-      toastMessage,
-      toastType
-    } = this.state;
     const {
       invalidFields,
       showingValidation
@@ -1860,6 +1896,11 @@ class IssueEdit extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
         created,
         due
       }
+    } = this.state;
+    const {
+      toastVisible,
+      toastMessage,
+      toastType
     } = this.state;
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["Panel"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["Panel"].Heading, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["Panel"].Title, null, `Editing issue: ${id}`)), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["Panel"].Body, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["Form"], {
       horizontal: true,
@@ -2177,17 +2218,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "default", function() { return IssueList; });
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
 /* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! react-router-dom */ "react-router-dom");
-/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-bootstrap */ "react-bootstrap");
-/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var url_search_params__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! url-search-params */ "url-search-params");
-/* harmony import */ var url_search_params__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(url_search_params__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var url_search_params__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! url-search-params */ "url-search-params");
+/* harmony import */ var url_search_params__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(url_search_params__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! react-router-dom */ "react-router-dom");
+/* harmony import */ var react_router_dom__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(react_router_dom__WEBPACK_IMPORTED_MODULE_2__);
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! react-bootstrap */ "react-bootstrap");
+/* harmony import */ var react_bootstrap__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__);
 /* harmony import */ var _IssueFilter_jsx__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./IssueFilter.jsx */ "./src/IssueFilter.jsx");
 /* harmony import */ var _IssueTable_jsx__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./IssueTable.jsx */ "./src/IssueTable.jsx");
-/* harmony import */ var _graphQLFetch_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./graphQLFetch.js */ "./src/graphQLFetch.js");
-/* harmony import */ var _IssueDetail_jsx__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./IssueDetail.jsx */ "./src/IssueDetail.jsx");
+/* harmony import */ var _IssueDetail_jsx__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./IssueDetail.jsx */ "./src/IssueDetail.jsx");
+/* harmony import */ var _graphQLFetch_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./graphQLFetch.js */ "./src/graphQLFetch.js");
 /* harmony import */ var _Toast_jsx__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./Toast.jsx */ "./src/Toast.jsx");
+/* harmony import */ var _store_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./store.js */ "./src/store.js");
 /* eslint linebreak-style: ["error", "windows"] */
 
 
@@ -2198,13 +2240,42 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 class IssueList extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
+  static async fetchData(match, search, showError) {
+    const params = new url_search_params__WEBPACK_IMPORTED_MODULE_1___default.a(search);
+    const vars = {};
+    if (params.get('status')) vars.status = params.get('status');
+    const effortMin = parseInt(params.get('effortMin'), 10);
+    if (!Number.isNaN(effortMin)) vars.effortMin = effortMin;
+    const effortMax = parseInt(params.get('effortMax'), 10);
+    if (!Number.isNaN(effortMax)) vars.effortMax = effortMax;
+    const query = `query issueList(
+      $status: StatusType
+      $effortMin: Int
+      $effortMax: Int
+    ) {
+      issueList(
+        status: $status
+        effortMin: $effortMin
+        effortMax: $effortMax
+      ) {
+        id title status owner
+        created effort due
+      }
+    }`;
+    const data = await Object(_graphQLFetch_js__WEBPACK_IMPORTED_MODULE_7__["default"])(query, vars, showError);
+    return data;
+  }
+
   constructor() {
     super();
+    const issues = _store_js__WEBPACK_IMPORTED_MODULE_9__["default"].initialData ? _store_js__WEBPACK_IMPORTED_MODULE_9__["default"].initialData.issueList : null;
+    delete _store_js__WEBPACK_IMPORTED_MODULE_9__["default"].initialData;
     this.state = {
-      issues: [],
+      issues,
       toastVisible: false,
-      toastMessage: ' ',
+      toastMessage: '',
       toastType: 'info'
     };
     this.closeIssue = this.closeIssue.bind(this);
@@ -2215,7 +2286,10 @@ class IssueList extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
   }
 
   componentDidMount() {
-    this.loadData();
+    const {
+      issues
+    } = this.state;
+    if (issues == null) this.loadData();
   }
 
   componentDidUpdate(prevProps) {
@@ -2241,28 +2315,7 @@ class IssueList extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
         search
       }
     } = this.props;
-    const params = new url_search_params__WEBPACK_IMPORTED_MODULE_3___default.a(search);
-    const vars = {};
-    if (params.get('status')) vars.status = params.get('status');
-    const effortMin = parseInt(params.get('effortMin'), 10);
-    if (!Number.isNaN(effortMin)) vars.effortMin = effortMin;
-    const effortMax = parseInt(params.get('effortMax'), 10);
-    if (!Number.isNaN(effortMax)) vars.effortMax = effortMax;
-    const query = `query issueList(
-      $status: StatusType
-      $effortMin: Int
-      $effortMax: Int
-      ) {
-        issueList(
-          status: $status
-          effortMin: $effortMin
-          effortMax: $effortMax
-          ) {
-        id title status owner
-        created effort due
-      }
-    }`;
-    const data = await Object(_graphQLFetch_js__WEBPACK_IMPORTED_MODULE_6__["default"])(query, vars, this.showError);
+    const data = await IssueList.fetchData(null, search, this.showError);
 
     if (data) {
       this.setState({
@@ -2273,15 +2326,15 @@ class IssueList extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
 
   async closeIssue(index) {
     const query = `mutation issueClose($id: Int!) {
-    issueUpdate(id: $id, changes: { status: Closed }) {
-    id title status owner
-    effort created due description
-    }
+      issueUpdate(id: $id, changes: { status: Closed }) {
+        id title status owner
+        effort created due description
+      }
     }`;
     const {
       issues
     } = this.state;
-    const data = await Object(_graphQLFetch_js__WEBPACK_IMPORTED_MODULE_6__["default"])(query, {
+    const data = await Object(_graphQLFetch_js__WEBPACK_IMPORTED_MODULE_7__["default"])(query, {
       id: issues[index].id
     }, this.showError);
 
@@ -2315,7 +2368,7 @@ class IssueList extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
     const {
       id
     } = issues[index];
-    const data = await Object(_graphQLFetch_js__WEBPACK_IMPORTED_MODULE_6__["default"])(query, {
+    const data = await Object(_graphQLFetch_js__WEBPACK_IMPORTED_MODULE_7__["default"])(query, {
       id
     }, this.showError);
 
@@ -2331,11 +2384,11 @@ class IssueList extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
         }
 
         newList.splice(index, 1);
-        this.showSuccess(`Deleted issue ${id} successfully.`);
         return {
           issues: newList
         };
       });
+      this.showSuccess(`Deleted issue ${id} successfully.`);
     } else {
       this.loadData();
     }
@@ -2367,25 +2420,26 @@ class IssueList extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
     const {
       issues
     } = this.state;
-    const {
-      match
-    } = this.props;
+    if (issues == null) return null;
     const {
       toastVisible,
       toastType,
       toastMessage
     } = this.state;
-    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Panel"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Panel"].Heading, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Panel"].Title, {
+    const {
+      match
+    } = this.props;
+    return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react__WEBPACK_IMPORTED_MODULE_0___default.a.Fragment, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["Panel"], null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["Panel"].Heading, null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["Panel"].Title, {
       toggle: true
-    }, "Filter")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_2__["Panel"].Body, {
+    }, "Filter")), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_3__["Panel"].Body, {
       collapsible: true
     }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_IssueFilter_jsx__WEBPACK_IMPORTED_MODULE_4__["default"], null))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_IssueTable_jsx__WEBPACK_IMPORTED_MODULE_5__["default"], {
       issues: issues,
       closeIssue: this.closeIssue,
       deleteIssue: this.deleteIssue
-    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_1__["Route"], {
+    }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_router_dom__WEBPACK_IMPORTED_MODULE_2__["Route"], {
       path: `${match.path}/:id`,
-      component: _IssueDetail_jsx__WEBPACK_IMPORTED_MODULE_7__["default"]
+      component: _IssueDetail_jsx__WEBPACK_IMPORTED_MODULE_6__["default"]
     }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(_Toast_jsx__WEBPACK_IMPORTED_MODULE_8__["default"], {
       showing: toastVisible,
       onDismiss: this.dismissToast,
@@ -2525,6 +2579,28 @@ function IssueTable({
     responsive: true
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("thead", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tr", null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", null, "ID"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", null, "Status"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", null, "Owner"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", null, "Created"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", null, "Effort"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", null, "Due Date"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", null, "Title"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("th", null, "Action"))), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("tbody", null, issueRows));
 }
+
+/***/ }),
+
+/***/ "./src/NotFound.jsx":
+/*!**************************!*\
+  !*** ./src/NotFound.jsx ***!
+  \**************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! react */ "react");
+/* harmony import */ var react__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(react__WEBPACK_IMPORTED_MODULE_0__);
+/* eslint linebreak-style: ["error", "windows"] */
+
+
+function NotFound() {
+  return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement("h1", null, "Page Not Found");
+}
+
+/* harmony default export */ __webpack_exports__["default"] = (NotFound);
 
 /***/ }),
 
@@ -2849,6 +2925,46 @@ async function graphQLFetch(query, variables = {}, showError = null) {
 
 /***/ }),
 
+/***/ "./src/routes.js":
+/*!***********************!*\
+  !*** ./src/routes.js ***!
+  \***********************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _IssueList_jsx__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./IssueList.jsx */ "./src/IssueList.jsx");
+/* harmony import */ var _IssueReport_jsx__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./IssueReport.jsx */ "./src/IssueReport.jsx");
+/* harmony import */ var _IssueEdit_jsx__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./IssueEdit.jsx */ "./src/IssueEdit.jsx");
+/* harmony import */ var _About_jsx__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./About.jsx */ "./src/About.jsx");
+/* harmony import */ var _NotFound_jsx__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./NotFound.jsx */ "./src/NotFound.jsx");
+/* eslint linebreak-style: ["error", "windows"] */
+
+
+
+
+
+const routes = [{
+  path: '/issues',
+  component: _IssueList_jsx__WEBPACK_IMPORTED_MODULE_0__["default"]
+}, {
+  path: '/edit/:id',
+  component: _IssueEdit_jsx__WEBPACK_IMPORTED_MODULE_2__["default"]
+}, {
+  path: '/report',
+  component: _IssueReport_jsx__WEBPACK_IMPORTED_MODULE_1__["default"]
+}, {
+  path: '/about',
+  component: _About_jsx__WEBPACK_IMPORTED_MODULE_3__["default"]
+}, {
+  path: '*',
+  component: _NotFound_jsx__WEBPACK_IMPORTED_MODULE_4__["default"]
+}];
+/* harmony default export */ __webpack_exports__["default"] = (routes);
+
+/***/ }),
+
 /***/ "./src/store.js":
 /*!**********************!*\
   !*** ./src/store.js ***!
@@ -2858,6 +2974,7 @@ async function graphQLFetch(query, variables = {}, showError = null) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
+/* eslint linebreak-style: ["error", "windows"] */
 const store = {};
 /* harmony default export */ __webpack_exports__["default"] = (store);
 
@@ -3075,6 +3192,17 @@ module.exports = require("react-router-bootstrap");
 /***/ (function(module, exports) {
 
 module.exports = require("react-router-dom");
+
+/***/ }),
+
+/***/ "serialize-javascript":
+/*!***************************************!*\
+  !*** external "serialize-javascript" ***!
+  \***************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = require("serialize-javascript");
 
 /***/ }),
 

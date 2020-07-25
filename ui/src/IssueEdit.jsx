@@ -13,28 +13,47 @@ import NumInput from './NumInput.jsx';
 import DateInput from './DateInput.jsx';
 import TextInput from './TextInput.jsx';
 import Toast from './Toast.jsx';
+import store from './store.js';
 
 export default class IssueEdit extends React.Component {
+  static async fetchData(match, search, showError) {
+    const query = `query issue($id: Int!) {
+      issue(id: $id) {
+        id title status owner
+        effort created due description
+      }
+    }`;
+
+    const { params: { id } } = match;
+    const result = await graphQLFetch(query, { id: parseInt(id, 10) }, showError);
+    return result;
+  }
+
   constructor() {
     super();
+    const issue = store.initialData ? store.initialData.issue : null;
+    delete store.initialData;
     this.state = {
-      issue: {},
+      issue,
       invalidFields: {},
       showingValidation: false,
       toastVisible: false,
-      toastMessage: ' ',
+      toastMessage: '',
       toastType: 'success',
     };
     this.onChange = this.onChange.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
     this.onValidityChange = this.onValidityChange.bind(this);
+    this.dismissValidation = this.dismissValidation.bind(this);
+    this.showValidation = this.showValidation.bind(this);
     this.showSuccess = this.showSuccess.bind(this);
     this.showError = this.showError.bind(this);
     this.dismissToast = this.dismissToast.bind(this);
   }
 
   componentDidMount() {
-    this.loadData();
+    const { issue } = this.state;
+    if (issue == null) this.loadData();
   }
 
   componentDidUpdate(prevProps) {
@@ -89,6 +108,12 @@ export default class IssueEdit extends React.Component {
     }
   }
 
+  async loadData() {
+    const { match } = this.props;
+    const data = await IssueEdit.fetchData(match, null, this.showError);
+    this.setState({ issue: data ? data.issue : {}, invalidFields: {} });
+  }
+
   showValidation() {
     this.setState({ showingValidation: true });
   }
@@ -113,20 +138,10 @@ export default class IssueEdit extends React.Component {
     this.setState({ toastVisible: false });
   }
 
-  async loadData() {
-    const query = `query issue($id: Int!) {
-      issue(id: $id) {
-        id title status owner
-        effort created due description
-      }
-    }`;
-
-    const { match: { params: { id } } } = this.props;
-    const data = await graphQLFetch(query, { id: parseInt(id, 10) }, this.showError);
-    this.setState({ issue: data ? data.issue : {}, invalidFields: {} });
-  }
-
   render() {
+    const { issue } = this.state;
+    if (issue == null) return null;
+
     const { issue: { id } } = this.state;
     const { match: { params: { id: propsId } } } = this.props;
     if (id == null) {
@@ -135,7 +150,7 @@ export default class IssueEdit extends React.Component {
       }
       return null;
     }
-    const { toastVisible, toastMessage, toastType } = this.state;
+
     const { invalidFields, showingValidation } = this.state;
     let validationMessage;
     if (Object.keys(invalidFields).length !== 0 && showingValidation) {
@@ -149,6 +164,7 @@ export default class IssueEdit extends React.Component {
     const { issue: { title, status } } = this.state;
     const { issue: { owner, effort, description } } = this.state;
     const { issue: { created, due } } = this.state;
+    const { toastVisible, toastMessage, toastType } = this.state;
 
     return (
       <Panel>
@@ -264,7 +280,6 @@ export default class IssueEdit extends React.Component {
               <Col smOffset={3} sm={9}>{validationMessage}</Col>
             </FormGroup>
           </Form>
-
         </Panel.Body>
         <Panel.Footer>
           <Link to={`/edit/${id - 1}`}>Prev</Link>
