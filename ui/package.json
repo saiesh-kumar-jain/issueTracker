@@ -6,13 +6,15 @@
   "scripts": {
     "build": " npm run compile && npm run start ",
     "#start": "UI server. HMR is enabled in dev mode.",
-    "start": "nodemon -w dist -w .env dist/server.js",
+    "start": "node dist/server.js",
     "#compile": "Generates JS bundles for production. Use with start.",
     "compile": "webpack --mode production",
     "#lint": "Runs ESLint on all relevant files",
     "lint": "eslint server src browser --ext js,jsx",
-    "#watch": "Compile, and recompile on any changes.",
-    "watch": "webpack --watch"
+    "#watch-server-hmr": "Recompile server HMR bundle on changes.",
+    "watch-server-hmr": "webpack -w --config webpack.serverHMR.js",
+    "#dev-all": "Dev mode: watch for server changes and start UI server",
+    "dev-all": "rm dist/* && npm run watch-server-hmr & sleep 5 && npm start"
   },
   "repository": {
     "type": "git",
@@ -30,6 +32,7 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "http-proxy-middleware": "^1.0.5",
+    "isomorphic-fetch": "^2.2.1",
     "nodemon": "^1.19.4",
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
@@ -37,8 +40,7 @@
     "react-dom": "^16.13.1",
     "react-router-bootstrap": "^0.25.0",
     "react-router-dom": "^4.3.1",
-    "url-search-params": "^1.1.0",
-    "whatwg-fetch": "^3.2.0"
+    "url-search-params": "^1.1.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.5",
@@ -55,6 +57,7 @@
     "webpack-cli": "^3.3.12",
     "webpack-dev-middleware": "^3.7.2",
     "webpack-hot-middleware": "^2.25.0",
+    "webpack-merge": "^4.2.2",
     "webpack-node-externals": "^1.7.2"
   }
 }
