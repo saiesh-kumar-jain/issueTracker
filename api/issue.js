@@ -34,6 +34,34 @@ async function update(_, { id, changes }) {
   return savedIssue;
 }
 
+async function counts(_, { status, effortMin, effortMax }) {
+  const db = getDb();
+  const filter = {};
+  if (status) filter.status = status;
+  if (effortMin !== undefined || effortMax !== undefined) {
+    filter.effort = {};
+    if (effortMin !== undefined) filter.effort.$gte = effortMin;
+    if (effortMax !== undefined) filter.effort.$lte = effortMax;
+  }
+  const results = await db.collection('issues').aggregate([
+    { $match: filter },
+    {
+      $group: {
+        _id: { owner: '$owner', status: '$status' },
+        count: { $sum: 1 },
+      },
+    },
+  ]).toArray();
+  const stats = {};
+  results.forEach((result) => {
+  // eslint-disable-next-line no-underscore-dangle
+    const { owner, status: statusKey } = result._id;
+    if (!stats[owner]) stats[owner] = { owner };
+    stats[owner][statusKey] = result.count;
+  });
+  return Object.values(stats);
+}
+
 function validate(issue) {
   const errors = [];
   if (issue.title.length < 3) {
@@ -75,5 +103,5 @@ async function remove(_, { id }) {
 }
 
 module.exports = {
-  list, add, get, update, delete: remove,
+  list, add, get, update, delete: remove, counts,
 };
