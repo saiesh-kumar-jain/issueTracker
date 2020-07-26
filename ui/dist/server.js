@@ -22,7 +22,7 @@
 /******/
 /******/ 	var hotApplyOnUpdate = true;
 /******/ 	// eslint-disable-next-line no-unused-vars
-/******/ 	var hotCurrentHash = "10157473b80cdffeeae4";
+/******/ 	var hotCurrentHash = "5d19f5ddb894cd7dd424";
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule;
@@ -2909,7 +2909,8 @@ class Toast extends react__WEBPACK_IMPORTED_MODULE_0___default.a.Component {
       style: {
         position: 'fixed',
         bottom: 20,
-        left: 20
+        left: 20,
+        zIndex: 10
       }
     }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default.a.createElement(react_bootstrap__WEBPACK_IMPORTED_MODULE_1__["Alert"], {
       bsStyle: bsStyle,
