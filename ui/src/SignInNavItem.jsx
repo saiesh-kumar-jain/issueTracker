@@ -11,7 +11,6 @@ class SigninNavItem extends React.Component {
     super(props);
     this.state = {
       showing: false,
-      user: { signedIn: false, givenName: '' },
       disabled: true,
     };
     this.showModal = this.showModal.bind(this);
@@ -32,21 +31,64 @@ class SigninNavItem extends React.Component {
     });
   }
 
+  // async loadData() {
+  //   const apiEndpoint = window.ENV.UI_AUTH_ENDPOINT;
+  //   const response = await fetch(`${apiEndpoint}/user`, {
+  //     method: 'POST',
+  //   });
+  //   const body = await response.text();
+  //   const result = JSON.parse(body);
+  //   const { signedIn, givenName } = result;
+  //   this.setState({ user: { signedIn, givenName } });
+  // }
+
   async signIn() {
     this.hideModal();
     const { showError } = this.props;
+    let googleToken;
     try {
       const auth2 = window.gapi.auth2.getAuthInstance();
       const googleUser = await auth2.signIn();
-      const givenName = googleUser.getBasicProfile().getGivenName();
-      this.setState({ user: { signedIn: true, givenName } });
+      googleToken = googleUser.getAuthResponse().id_token;
     } catch (error) {
       showError(`Error authenticating with Google: ${error.error}`);
     }
+
+    try {
+      const apiEndpoint = window.ENV.UI_AUTH_ENDPOINT;
+      const response = await fetch(`${apiEndpoint}/signin`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ google_token: googleToken }),
+      });
+      const body = await response.text();
+      const result = JSON.parse(body);
+      const { signedIn, givenName } = result;
+
+      const { onUserChange } = this.props;
+      onUserChange({ signedIn, givenName });
+    } catch (error) {
+      showError(`Error signing into the app: ${error}`);
+    }
   }
 
-  signOut() {
-    this.setState({ user: { signedIn: false, givenName: '' } });
+  async signOut() {
+    const apiEndpoint = window.ENV.UI_AUTH_ENDPOINT;
+    const { showError } = this.props;
+    try {
+      await fetch(`${apiEndpoint}/signout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      const auth2 = window.gapi.auth2.getAuthInstance();
+      await auth2.signOut();
+      // this.setState({ user: { signedIn: false, givenName: '' } });
+      const { onUserChange } = this.props;
+      onUserChange({ signedIn: false, givenName: ' ' });
+    } catch (error) {
+      showError(`Error signing out: ${error}`);
+    }
   }
 
   showModal() {
@@ -64,7 +106,7 @@ class SigninNavItem extends React.Component {
   }
 
   render() {
-    const { user } = this.state;
+    const { user } = this.props;
     if (user.signedIn) {
       return (
         <NavDropdown title={user.givenName} id="user">

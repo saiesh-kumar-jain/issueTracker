@@ -2,6 +2,7 @@
 
 const { UserInputError } = require('apollo-server-express');
 const { getDb, getNextSequence } = require('./db.js');
+const { mustBeSignedIn } = require('./auth.js');
 
 const PAGE_SIZE = 10;
 
@@ -32,6 +33,20 @@ async function get(_, { id }) {
   const issue = await db.collection('issues').findOne({ id });
   return issue;
 }
+
+function validate(issue) {
+  const errors = [];
+  if (issue.title.length < 3) {
+    errors.push('Field "title" must be at least 3 characters long.');
+  }
+  if (issue.status === 'Assigned' && !issue.owner) {
+    errors.push('Field "owner" is required when status is "Assigned"');
+  }
+  if (errors.length > 0) {
+    throw new UserInputError('Invalid input(s)', { errors });
+  }
+}
+
 
 async function update(_, { id, changes }) {
   const db = getDb();
@@ -71,19 +86,6 @@ async function counts(_, { status, effortMin, effortMax }) {
     stats[owner][statusKey] = result.count;
   });
   return Object.values(stats);
-}
-
-function validate(issue) {
-  const errors = [];
-  if (issue.title.length < 3) {
-    errors.push('Field "title" must be at least 3 characters long.');
-  }
-  if (issue.status === 'Assigned' && !issue.owner) {
-    errors.push('Field "owner" is required when status is "Assigned"');
-  }
-  if (errors.length > 0) {
-    throw new UserInputError('Invalid input(s)', { errors });
-  }
 }
 
 async function add(_, { issue }) {
@@ -127,5 +129,11 @@ async function restore(_, { id }) {
 }
 
 module.exports = {
-  list, add, get, update, delete: remove, restore, counts,
+  list,
+  add: mustBeSignedIn(add),
+  get,
+  update: mustBeSignedIn(update),
+  delete: mustBeSignedIn(remove),
+  restore: mustBeSignedIn(restore),
+  counts,
 };
