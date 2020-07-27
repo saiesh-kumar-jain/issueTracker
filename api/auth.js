@@ -36,6 +36,10 @@ function getUser(req) {
   }
 }
 
+function resolveUser(_, args, { user }) {
+  return user;
+}
+
 routes.post('/signin', async (req, res) => {
   if (!JWT_SECRET) {
     res.status(500).send('Missing JWT_SECRET. Refusing to authenticate');
@@ -85,4 +89,6 @@ function mustBeSignedIn(resolver) {
   };
 }
 
-module.exports = { routes, getUser, mustBeSignedIn };
+module.exports = {
+  routes, getUser, mustBeSignedIn, resolveUser,
+};
