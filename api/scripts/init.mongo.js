@@ -15,7 +15,6 @@
 
 db.issues.remove({});
 db.deleted_issues.remove({});
-
 const issuesDB = [
   {
     id: 1,

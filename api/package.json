@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Issue Tracker - api",
   "main": "index.js",
+  "engines": {
+    "node": "10.x",
+    "npm": "6.x"
+  },
   "scripts": {
     "start": "nodemon -e js,graphql -w . -w .env server.js",
     "lint": "eslint .",
@@ -12,7 +16,7 @@
     "type": "git",
     "url": "git+https://github.com/saiesh-kumar-jain/issueTracker.git"
   },
-  "author": "",
+  "author": "saiesh kumar jain",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/saiesh-kumar-jain/issueTracker/issues"
